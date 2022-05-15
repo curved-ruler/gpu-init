@@ -13,14 +13,14 @@ GLFWwindow* window;
 bool  w1full = false;
 int   w1[4] = {30, 30, 640, 480};
 float transform[4];
-float scale = 1.0f;
+float scale = 2.5f;
 float pos[2] = {0.0f, 0.0f};
 float mouse[2] = {0.0f, 0.0f};
 
 
 
 void key_callback         (GLFWwindow* wnd, int key, int scancode, int action, int mods);
-//void scroll_callback      (GLFWwindow* wnd, double xoffset, double yoffset);
+void scroll_callback      (GLFWwindow* wnd, double xoffset, double yoffset);
 //void cursorpos_callback   (GLFWwindow* wnd, double xpos, double ypos);
 //void mousebutton_callback (GLFWwindow* wnd, int button, int action, int mods);
 void window_size_callback(GLFWwindow* wnd, int width, int height);
@@ -74,7 +74,7 @@ float mand(in float x, in float y)
     }
     return (float(i)/float(n));
 }
-// Julia
+// Julia + M
 vec3 col(in float x, in float y)
 {
     vec2 z = vec2(x,y);
@@ -87,6 +87,7 @@ vec3 col(in float x, in float y)
         if (length(z) > 2.0) break;
     }
     float t = fract(float(i) / float(n) * 2.0);
+    
     return hsv2rgb(vec3(0.1, 0.9, t)) + vec3(0.1*mand(x,y));
 }
 
@@ -107,12 +108,12 @@ int main ()
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     glfwWindowHint(GLFW_RESIZABLE, GL_TRUE);
-    //glfwWindowHint(GLFW_DOUBLEBUFFER, GL_TRUE);
+    glfwWindowHint(GLFW_DOUBLEBUFFER, GL_TRUE);
     
     //window = glfwCreateWindow(WIDTH, HEIGHT, "NewWorld", glfwGetPrimaryMonitor(), nullptr);
     window = glfwCreateWindow(w1[2], w1[3], "GLFW", nullptr, nullptr);
-    glfwSetWindowPos(window, w1[0], w1[1]);
     glfwMakeContextCurrent(window);
+    glfwSetWindowPos(window, w1[0], w1[1]);
     glfwSwapInterval(1);
     
     if (window == NULL)
@@ -129,7 +130,7 @@ int main ()
     }
     
     glfwSetKeyCallback        (window, key_callback);
-    //glfwSetScrollCallback     (window, scroll_callback);
+    glfwSetScrollCallback     (window, scroll_callback);
     //glfwSetCursorPosCallback  (window, cursorpos_callback);
     //glfwSetMouseButtonCallback(window, mousebutton_callback);
     glfwSetWindowSizeCallback(window, window_size_callback);
@@ -161,7 +162,8 @@ int main ()
     glDisable(GL_DEPTH_TEST);
     glDisable(GL_CULL_FACE);
     
-    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2*sizeof(float), 0);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, 0);
     
     
     while (!glfwWindowShouldClose(window))
@@ -186,12 +188,15 @@ int main ()
         
         glfwPollEvents();
         
+        glViewport(0, 0, w1[2], w1[3]);
+        
         transform[0] =   scale/w1[3];
         transform[1] = -(w1[2]*scale)/(w1[3]*2.0)-pos[0];
         transform[2] =   scale/w1[3];
         transform[3] = - scale/2.0+pos[1];
-        glUniform1fv(tr_location, 4, transform);
-        glUniform1fv(mm_location, 2, mouse);
+        glUniform4fv(tr_location, 1, transform);
+        glUniform2fv(mm_location, 1, mouse);
+        
         glDrawArrays(GL_TRIANGLES, 0, 6);
         
         glfwSwapBuffers(window);
@@ -243,7 +248,12 @@ void key_callback (GLFWwindow* /*wnd*/, int key, int /*scancode*/, int action, i
         }
     }
 }
-//void scroll_callback      (GLFWwindow* wnd, double xoffset, double yoffset);
+void scroll_callback      (GLFWwindow* /*wnd*/, double /*xoffset*/, double yoffset)
+{
+    //std::cout << yoffset << std::endl;
+    if (yoffset < 0) { scale *= 0.8f; }
+    else             { scale *= 1.25f; }
+}
 //void cursorpos_callback   (GLFWwindow* wnd, double xpos, double ypos);
 //void mousebutton_callback (GLFWwindow* wnd, int button, int action, int mods);
 void window_size_callback(GLFWwindow* /*wnd*/, int width, int height)
