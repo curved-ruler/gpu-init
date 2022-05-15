@@ -10,20 +10,24 @@ std::chrono::time_point<std::chrono::steady_clock> t1, t2;
 std::chrono::duration<float> dt;
 
 GLFWwindow* window;
-bool  w1full = false;
-int   w1[4] = {30, 30, 640, 480};
+bool  window_fullscreen = false;
+int   w1[4] = {30, 100, 640, 480};
+int   w2[4] = {30, 100, 640, 480};
 float transform[4];
-float scale = 2.5f;
-float pos[2] = {0.0f, 0.0f};
+float scale    = 2.5f;
+float pos[2]   = {0.0f, 0.0f};
 float mouse[2] = {0.0f, 0.0f};
+double mxold, myold;
+bool grabbed = false;
+bool param_freeze = false;
 
 
 
 void key_callback         (GLFWwindow* wnd, int key, int scancode, int action, int mods);
 void scroll_callback      (GLFWwindow* wnd, double xoffset, double yoffset);
-//void cursorpos_callback   (GLFWwindow* wnd, double xpos, double ypos);
-//void mousebutton_callback (GLFWwindow* wnd, int button, int action, int mods);
-void window_size_callback(GLFWwindow* wnd, int width, int height);
+void cursorpos_callback   (GLFWwindow* wnd, double xpos, double ypos);
+void mousebutton_callback (GLFWwindow* wnd, int button, int action, int mods);
+void window_size_callback (GLFWwindow* wnd, int width, int height);
 
 void compile_shaders ();
 
@@ -110,11 +114,13 @@ int main ()
     glfwWindowHint(GLFW_RESIZABLE, GL_TRUE);
     glfwWindowHint(GLFW_DOUBLEBUFFER, GL_TRUE);
     
-    //window = glfwCreateWindow(WIDTH, HEIGHT, "NewWorld", glfwGetPrimaryMonitor(), nullptr);
     window = glfwCreateWindow(w1[2], w1[3], "GLFW", nullptr, nullptr);
-    glfwMakeContextCurrent(window);
     glfwSetWindowPos(window, w1[0], w1[1]);
+    
+    glfwMakeContextCurrent(window);
+    
     glfwSwapInterval(1);
+    
     
     if (window == NULL)
     {
@@ -131,9 +137,9 @@ int main ()
     
     glfwSetKeyCallback        (window, key_callback);
     glfwSetScrollCallback     (window, scroll_callback);
-    //glfwSetCursorPosCallback  (window, cursorpos_callback);
-    //glfwSetMouseButtonCallback(window, mousebutton_callback);
-    glfwSetWindowSizeCallback(window, window_size_callback);
+    glfwSetCursorPosCallback  (window, cursorpos_callback);
+    glfwSetMouseButtonCallback(window, mousebutton_callback);
+    glfwSetWindowSizeCallback (window, window_size_callback);
     
     GLuint vao = 0;
     glGenVertexArrays(1, &vao);
@@ -188,8 +194,6 @@ int main ()
         
         glfwPollEvents();
         
-        glViewport(0, 0, w1[2], w1[3]);
-        
         transform[0] =   scale/w1[3];
         transform[1] = -(w1[2]*scale)/(w1[3]*2.0)-pos[0];
         transform[2] =   scale/w1[3];
@@ -220,6 +224,7 @@ void key_callback (GLFWwindow* /*wnd*/, int key, int /*scancode*/, int action, i
     else if (key == (GLFW_KEY_C) && (mods & GLFW_MOD_CONTROL))
     {
         glfwSetClipboardString(NULL, "clipboard test");
+        std::cout << "Clipboard updated" << std::endl;
         return;
     }
     
@@ -229,36 +234,85 @@ void key_callback (GLFWwindow* /*wnd*/, int key, int /*scancode*/, int action, i
         return;
     }
     
+    else if (key == (GLFW_KEY_Q))
+    {
+        param_freeze = !param_freeze;
+        return;
+    }
     
     else if (key == GLFW_KEY_F11)
     {
-        if (w1full)
+        if (window_fullscreen)
         {
-            glfwSetWindowMonitor(window, nullptr, 0, 0, w1[2], w1[3], 0);
+            w1[0] = w2[0];
+            w1[1] = w2[1];
+            w1[2] = w2[2];
+            w1[3] = w2[3];
+            glfwSetWindowMonitor(window, nullptr, w1[0], w1[1], w1[2], w1[3], 0);
+            glViewport(0, 0, w1[2], w1[3]);
+            
             //glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-            glfwSetWindowPos(window, w1[0], w1[1]);
-            w1full = false;
+            window_fullscreen = false;
         }
         else
         {
+            w2[0] = w1[0];
+            w2[1] = w1[1];
+            w2[2] = w1[2];
+            w2[3] = w1[3];
             const GLFWvidmode* mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
             glfwSetWindowMonitor(window, glfwGetPrimaryMonitor(), 0, 0, mode->width, mode->height, mode->refreshRate);
+            w1[2] = mode->width;
+            w1[3] = mode->height;
+            glViewport(0, 0, w1[2], w1[3]);
+            
             //glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
-            w1full = true;
+            window_fullscreen = true;
         }
     }
 }
 void scroll_callback      (GLFWwindow* /*wnd*/, double /*xoffset*/, double yoffset)
 {
-    //std::cout << yoffset << std::endl;
-    if (yoffset < 0) { scale *= 0.8f; }
+    //std::cout << "Scroll Y: " << yoffset << std::endl;
+    if (yoffset > 0) { scale *= 0.8f;  }
     else             { scale *= 1.25f; }
 }
-//void cursorpos_callback   (GLFWwindow* wnd, double xpos, double ypos);
-//void mousebutton_callback (GLFWwindow* wnd, int button, int action, int mods);
+void cursorpos_callback   (GLFWwindow* /*wnd*/, double xpos, double ypos)
+{
+    //std::cout << "M " << xpos << " - " << ypos << std::endl;
+    if (grabbed)
+    {
+        float a = scale/w1[3];
+        pos[0] += float(xpos-mxold) * a;
+        pos[1] += float(ypos-myold) * a;
+        mxold = xpos;
+        myold = ypos;
+    }
+    else if (!param_freeze)
+    {
+        mouse[0] = transform[0] * float(xpos) + transform[1];
+        mouse[1] = transform[2] * (w1[3]-float(ypos)) + transform[3];
+    }
+}
+void mousebutton_callback (GLFWwindow* /*wnd*/, int /*button*/, int action, int /*mods*/)
+{
+    //std::cout << "MB " << action << std::endl;
+    if   (action == GLFW_PRESS)
+    {
+        grabbed = true;
+        glfwGetCursorPos(window, &mxold, &myold);
+    }
+    else
+    {
+        grabbed = false;
+    }
+}
 void window_size_callback(GLFWwindow* /*wnd*/, int width, int height)
 {
-    std::cout << "SIZE: " << width << " - " << height << std::endl;
+    //std::cout << "SIZE: " << width << " - " << height << std::endl;
+    w1[2] = width;
+    w1[3] = height;
+    glViewport(0, 0, w1[2], w1[3]);
 }
 
 void compile_shaders ()

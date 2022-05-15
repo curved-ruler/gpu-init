@@ -1,6 +1,6 @@
 # gpu-init
 
-!WIP!
+! WIP ! - opengl-glfw and webgl is more or less ready
 
 The apps display the Mandelbrot and Julia sets.
 
