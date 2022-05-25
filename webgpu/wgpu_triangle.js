@@ -73,7 +73,9 @@ let init = async function ()
     const renderPassDescriptor = {
         colorAttachments: [{
             view: textureView,
-            loadValue: { r: 0.2, g: 0.2, b: 0.2, a: 1.0 },
+            //clearValue: { r: 0.2, g: 0.2, b: 0.2, a: 1.0 }, //Chromium
+            //loadOp: 'clear', //Chromium
+            loadValue: { r: 0.2, g: 0.2, b: 0.2, a: 1.0 }, //Firefox
             storeOp: 'store'
         }]
     };
