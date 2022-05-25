@@ -24,7 +24,8 @@ let init = async function ()
 
     const vertexShaderWgslCode =
         `
-        @vertex
+        @vertex //Firefox
+        //@stage(vertex) //Chromium
         fn main(@builtin(vertex_index) VertexIndex : u32)
             -> @builtin(position) vec4<f32> {
                 var pos = array<vec2<f32>, 3>(
@@ -38,7 +39,8 @@ let init = async function ()
 
     const fragmentShaderWgslCode =
         `
-        @fragment
+        @fragment //Firefox
+        //@stage(fragment) //Chromium
         fn main() -> @location(0) vec4<f32> {
             return vec4<f32>(0.0, 0.6, 0.0, 1.0);
         }
@@ -79,7 +81,8 @@ let init = async function ()
     const passEncoder = commandEncoder.beginRenderPass(renderPassDescriptor);
     passEncoder.setPipeline(pipeline);
     passEncoder.draw(3, 1, 0, 0);
-    passEncoder.endPass();
+    //passEncoder.end(); //Chromium
+    passEncoder.endPass(); //Firefox
 
     device.queue.submit([commandEncoder.finish()]);
 };
