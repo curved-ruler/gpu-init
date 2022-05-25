@@ -1,14 +1,12 @@
 
-(async () => {
-    if (!navigator.gpu) {
-        alert('Your browser does not support WebGPU or it is not enabled. More info: https://webgpu.io');
-        return;
-    }
+let init = async function ()
+{
+    if (!navigator.gpu) { alert('ERROR: WebGPU is not available'); return; }
 
     const adapter = await navigator.gpu.requestAdapter();
     const device  = await adapter.requestDevice();
 
-    const canvas  = document.getElementById('canvas')
+    const canvas  = document.getElementById('canvas');
     const context = canvas.getContext('webgpu');
 
     const devicePixelRatio = window.devicePixelRatio || 1;
@@ -26,9 +24,9 @@
 
     const vertexShaderWgslCode =
         `
-        [[stage(vertex)]]
-        fn main([[builtin(vertex_index)]] VertexIndex : u32)
-            -> [[builtin(position)]] vec4<f32> {
+        @vertex
+        fn main(@builtin(vertex_index) VertexIndex : u32)
+            -> @builtin(position) vec4<f32> {
                 var pos = array<vec2<f32>, 3>(
                 vec2<f32>(0.0, 0.5),
                 vec2<f32>(-0.5, -0.5),
@@ -40,8 +38,8 @@
 
     const fragmentShaderWgslCode =
         `
-        [[stage(fragment)]]
-        fn main() -> [[location(0)]] vec4<f32> {
+        @fragment
+        fn main() -> @location(0) vec4<f32> {
             return vec4<f32>(0.0, 0.6, 0.0, 1.0);
         }
     `;
@@ -84,4 +82,8 @@
     passEncoder.endPass();
 
     device.queue.submit([commandEncoder.finish()]);
-})();
+};
+
+
+
+document.addEventListener("DOMContentLoaded", init);
