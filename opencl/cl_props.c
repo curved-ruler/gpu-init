@@ -6,8 +6,8 @@
 #include <CL/opencl.h>
 
 
-int main() {
-
+int main()
+{
     cl_int errNum;
     cl_uint numPlatforms, numDevices;
     cl_platform_id *platformIds;
@@ -29,7 +29,8 @@ int main() {
 
     printf("Number of platforms: %u\n\n", numPlatforms);
     
-    for (i=0 ; i<numPlatforms ; i++) {
+    for (i=0 ; i<numPlatforms ; i++)
+    {
         errNum = clGetPlatformInfo(platformIds[i], CL_PLATFORM_NAME, 0, NULL, &size);
         errNum = clGetPlatformInfo(platformIds[i], CL_PLATFORM_NAME, size, info, NULL);
         printf("Platform %u name: %s\n\n", i, info);
@@ -37,9 +38,11 @@ int main() {
         errNum = clGetDeviceIDs(platformIds[i],CL_DEVICE_TYPE_ALL,0,NULL,&numDevices);
         deviceIds = (cl_device_id*)malloc(sizeof(cl_device_id) * numDevices);
         errNum = clGetDeviceIDs(platformIds[i],CL_DEVICE_TYPE_ALL,numDevices,deviceIds,NULL);
-        for (j=0 ; j<numDevices ; j++) {
+        for (j=0 ; j<numDevices ; j++)
+        {
             errNum = clGetDeviceInfo(deviceIds[j],CL_DEVICE_TYPE,sizeof(cl_device_type),&dtype,&size);
-            switch (dtype) {
+            switch (dtype)
+            {
                 case CL_DEVICE_TYPE_CPU :
                     printf("  Device is a CPU\n");
                     break;
