@@ -1,72 +1,80 @@
 
+let canvas   = null;
+let context  = null;
+let device   = null;
+let format   = null;
+let pipeline = null;
+
+//const pixr = window.devicePixelRatio || 1;
+
+let csize    = [];
+
+
+const vertex_wgsl = `\
+@vertex //Firefox
+//@stage(vertex) //Chromium
+fn main(@builtin(vertex_index) VertexIndex : u32) -> @builtin(position) vec4<f32> {
+    var pos = array<vec2<f32>, 3>(
+    vec2<f32>(0.0, 0.5),
+    vec2<f32>(-0.5, -0.5),
+    vec2<f32>(0.5, -0.5));
+    
+    return vec4<f32>(pos[VertexIndex], 0.0, 1.0);
+}
+`;
+
+const fragment_wgsl = `\
+@fragment //Firefox
+//@stage(fragment) //Chromium
+fn main() -> @location(0) vec4<f32> {
+    return vec4<f32>(0.0, 0.6, 0.0, 1.0);
+}
+`;
+
+
 let init = async function ()
 {
+    document.removeEventListener("DOMContentLoaded", init);
+    
     if (!navigator.gpu) { alert('ERROR: WebGPU is not available'); return; }
 
     const adapter = await navigator.gpu.requestAdapter();
-    const device  = await adapter.requestDevice();
+    device        = await adapter.requestDevice();
 
-    const canvas  = document.getElementById('canvas');
-    const context = canvas.getContext('webgpu');
+    canvas  = document.getElementById('canvas');
+    context = canvas.getContext('webgpu');
 
-    const devicePixelRatio = window.devicePixelRatio || 1;
-    const presentationSize = [
-        canvas.width  * devicePixelRatio,
-        canvas.height * devicePixelRatio,
-    ];
-    const presentationFormat = context.getPreferredFormat(adapter);
+    format = context.getPreferredFormat(adapter);
 
-    context.configure({
-        device,
-        format: presentationFormat,
-        size: presentationSize,
-    });
-
-    const vertexShaderWgslCode =
-        `
-        @vertex //Firefox
-        //@stage(vertex) //Chromium
-        fn main(@builtin(vertex_index) VertexIndex : u32)
-            -> @builtin(position) vec4<f32> {
-                var pos = array<vec2<f32>, 3>(
-                vec2<f32>(0.0, 0.5),
-                vec2<f32>(-0.5, -0.5),
-                vec2<f32>(0.5, -0.5));
-
-            return vec4<f32>(pos[VertexIndex], 0.0, 1.0);
-        }
-    `;
-
-    const fragmentShaderWgslCode =
-        `
-        @fragment //Firefox
-        //@stage(fragment) //Chromium
-        fn main() -> @location(0) vec4<f32> {
-            return vec4<f32>(0.0, 0.6, 0.0, 1.0);
-        }
-    `;
-
-    const pipeline = device.createRenderPipeline({
+    pipeline = device.createRenderPipeline({
         vertex: {
             module: device.createShaderModule({
-                code: vertexShaderWgslCode
+                code: vertex_wgsl
             }),
             entryPoint: 'main'
         },
         fragment: {
             module: device.createShaderModule({
-                code: fragmentShaderWgslCode
+                code: fragment_wgsl
             }),
             entryPoint: 'main',
             targets: [{
-                format: presentationFormat,
+                format: format,
             }]
         },
         primitive: {
             topology: 'triangle-list',
         }
     });
+    
+    resize();
+    draw();
+};
 
+let draw = function ()
+{
+    if (!context) return;
+    
     const commandEncoder = device.createCommandEncoder();
     const textureView    = context.getCurrentTexture().createView();
 
@@ -89,6 +97,22 @@ let init = async function ()
     device.queue.submit([commandEncoder.finish()]);
 };
 
+let resize = function ()
+{
+    if (!context) return;
+    
+    canvas.width  = window.innerWidth;
+    canvas.height = window.innerHeight;
+    csize = [ canvas.width, canvas.height ];
+    
+    context.configure({
+        device: device,
+        format: format,
+        size:   csize
+    });
+};
+
 
 
 document.addEventListener("DOMContentLoaded", init);
+window.addEventListener("resize", function() { resize(); draw(); });

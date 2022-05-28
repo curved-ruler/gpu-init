@@ -1,8 +1,8 @@
 
-var get_context = function (canvas_id)
+let get_context = function (canvas_id)
 {
-    var canvas = document.getElementById(canvas_id);
-    var glc;
+    let canvas = document.getElementById(canvas_id);
+    let glc;
     if (!canvas)
     {
         console.error('No <canvas> with id: ' + canvas_id);
@@ -24,10 +24,10 @@ var get_context = function (canvas_id)
     return glc;
 };
 
-var get_context_2 = function (canvas_id)
+let get_context_2 = function (canvas_id)
 {
-    var canvas = document.getElementById(canvas_id);
-    var glc2;
+    let canvas = document.getElementById(canvas_id);
+    let glc2;
     if (!canvas)
     {
         console.error('No <canvas> with id: ' + canvas_id);
@@ -49,9 +49,9 @@ var get_context_2 = function (canvas_id)
     return glc2;
 };
 
-var compile_shader = function (gl, str, type)
+let compile_shader = function (gl, str, type)
 { 
-    var shader = gl.createShader(type);
+    let shader = gl.createShader(type);
     
     gl.shaderSource(shader, str);
     gl.compileShader(shader);
@@ -64,9 +64,9 @@ var compile_shader = function (gl, str, type)
     return shader;
 };
 
-var create_vf_program = function (gl, vs_str, fs_str)
+let create_vf_program = function (gl, vs_str, fs_str)
 {
-    var vfp = { glprog : gl.createProgram() };
+    let vfp = { glprog : gl.createProgram() };
     
     vfp.vs = compile_shader(gl, vs_str, gl.VERTEX_SHADER);
     gl.attachShader(vfp.glprog, vfp.vs);
@@ -85,13 +85,13 @@ var create_vf_program = function (gl, vs_str, fs_str)
     return vfp;
 };
 
-var glprog = {
+let glprog = {
     get_context       : get_context,
     get_context_2     : get_context_2,
     create_vf_program : create_vf_program
 };
 
-var vs = `\
+let vs = `\
 #version 300 es
 
 layout(location = 0) in vec2  pos;
@@ -102,7 +102,7 @@ void main ()
 }
 `;
 
-var fs = `\
+let fs = `\
 #version 300 es
 precision highp float;
 
@@ -158,27 +158,27 @@ void main()
 //***************************************************
 //***************************************************
 
-var gl     = null;
-var shader = null;
-var canvas = null;
-var cwidth, cheight;
+let gl     = null;
+let shader = null;
+let canvas = null;
+let cwidth, cheight;
 
-var pos       = { x:0.0,  y:0.0 };
-var mouse_pos = { x:0.0,  y:0.0 };
-var mouse_dom = { x:null, y:null };
-var tr = [1,0,1,0];
-var scale = 2.5;
-var grabbed = 0;
-var mouse_param = true;
-var screen_quad_buffer = null;
-var start_func = "";
-var menu_hidden = false;
+let pos       = { x:0.0,  y:0.0 };
+let mouse_pos = { x:0.0,  y:0.0 };
+let mouse_dom = { x:null, y:null };
+let tr = [1,0,1,0];
+let scale = 2.5;
+let grabbed = 0;
+let mouse_param = true;
+let screen_quad_buffer = null;
+let start_func = "";
+let menu_hidden = false;
 
 
 
-var make_quad = function ()
+let make_quad = function ()
 {
-    var screen_quad = [
+    let screen_quad = [
         -1.0,  1.0,
         -1.0, -1.0,
          1.0, -1.0,
@@ -193,7 +193,7 @@ var make_quad = function ()
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(screen_quad), gl.STATIC_DRAW);
 };
 
-var draw = function ()
+let draw = function ()
 {
     if (!gl) return;
     if (!shader) return;
@@ -212,9 +212,9 @@ var draw = function ()
     gl.drawArrays(gl.TRIANGLES, 0, 6);
 };
 
-var zoomin  = function () { scale *= 0.8; };
-var zoomout = function () { scale *= 1.25;  };
-var handle_wheel = function (event)
+let zoomin  = function () { scale *= 0.8; };
+let zoomout = function () { scale *= 1.25;  };
+let handle_wheel = function (event)
 {
     if (event.deltaY < 0) zoomin();
     else                  zoomout();
@@ -222,19 +222,19 @@ var handle_wheel = function (event)
     draw();
 };
 
-var handle_mouse_down = function (event)
+let handle_mouse_down = function (event)
 {
     grabbed = 1;
 };
-var handle_mouse_up = function (event)
+let handle_mouse_up = function (event)
 {
     grabbed = 0;
 };
-var handle_mouse_move = function (event)
+let handle_mouse_move = function (event)
 {
     if (grabbed === 1)
     {
-        var a = scale/cheight;
+        let a = scale/cheight;
         pos.x += event.movementX * a;
         pos.y += event.movementY * a;
         draw();
@@ -246,7 +246,7 @@ var handle_mouse_move = function (event)
         draw();
     }
 };
-var handle_key_down = function (event)
+let handle_key_down = function (event)
 {
     if (event.key === "q" || event.key === "Q"/* && event.ctrlKey */)
     {
@@ -254,7 +254,7 @@ var handle_key_down = function (event)
     }
 };
 
-var resize = function ()
+let resize = function ()
 {
     if (!canvas || !gl) return;
     
@@ -265,7 +265,7 @@ var resize = function ()
     gl.viewport(0, 0, canvas.width, canvas.height);
 };
 
-var create_shader = function ()
+let create_shader = function ()
 {
     shader = glprog.create_vf_program(gl, vs, fs);
         
@@ -276,7 +276,7 @@ var create_shader = function ()
     shader.mouse = gl.getUniformLocation(shader.glprog, "mouse");
 };
 
-var init = function ()
+let init = function ()
 {
     document.removeEventListener("DOMContentLoaded", init);
     
