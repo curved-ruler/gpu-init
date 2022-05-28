@@ -1,6 +1,6 @@
 # gpu-init
 
-Simple 
+Simple starter files for GPU projects
 
 **! WIP !**
 
