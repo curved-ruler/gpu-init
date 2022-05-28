@@ -5,10 +5,10 @@ Simple starter files for GPU projects
 **! WIP !**
 
 Note that WebGPU standard is not ready,  
-quick status check: https://github.com/gpuweb/gpuweb/milestones  
-browser support: https://github.com/gpuweb/gpuweb/wiki/Implementation-Status  
+quick status check: https://github.com/gpuweb/gpuweb/milestones   
+browser support: https://github.com/gpuweb/gpuweb/wiki/Implementation-Status   
 
-For OpenGL context loading, glad is used: https://github.com/Dav1dde/glad__
+For OpenGL context loading, glad is used: https://github.com/Dav1dde/glad __
 Desktop multiplatform windowing: [GLFW](https://www.glfw.org/) or [SDL2](https://www.libsdl.org/)__
 
 The apps display the Mandelbrot and Julia sets.
