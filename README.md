@@ -13,7 +13,7 @@ Desktop multiplatform windowing: [GLFW](https://www.glfw.org/) or [SDL2](https:/
 
 The apps display the Mandelbrot and Julia sets.
 At least, opengl-glfw and webgl, these are more or less ready.
-webgpu is displaying a single triangle right now, not resizable.
+webgpu is displaying a single triangle right now.
 opencl contains two command-line apps - device querying and a simple parallel vector add.
 
 Julia controls:<br/>
