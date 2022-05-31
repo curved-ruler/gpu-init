@@ -2,7 +2,7 @@
 
 Simple starter files for GPU projects
 
-<hr/>
+## 
 
 Note that WebGPU standard is not ready,<br/>
 quick status check: https://github.com/gpuweb/gpuweb/milestones <br/>
@@ -11,7 +11,7 @@ browser support: https://github.com/gpuweb/gpuweb/wiki/Implementation-Status <br
 For OpenGL context loading, glad is used: https://github.com/Dav1dde/glad <br/>
 Desktop multiplatform windowing: [GLFW](https://www.glfw.org/) or [SDL2](https://www.libsdl.org/) <br/>
 
-<hr/>
+## 
 
 The apps display the Mandelbrot and Julia sets. (except opencl, that is command line atm)<br/>
 Controls:<br/>
@@ -21,9 +21,8 @@ Mouse drag  - pan<br/>
 Mouse wheel - zoom<br/>
 Q key - freeze parameter<br/>
 
-<hr/>
+## Bugs/Todo
 
-Bugs/Todo<br/>
 GLFW: multiple monitor support: https://github.com/glfw/glfw/issues/1699 <br/>
 SDL: app poses a full load on the CPU, vsync or manual sleep didn't work properly.<br/>
 WebGPU: currently only a triangle is shown, the Julia app does not work properly yet.<br/>
