@@ -1,13 +1,9 @@
 
+#include <iostream>
+
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
-#include <chrono>
-#include <thread>
-#include <iostream>
-
-std::chrono::time_point<std::chrono::steady_clock> t1, t2;
-std::chrono::duration<float> dt;
 
 GLFWwindow* window;
 bool  window_fullscreen = false;
@@ -174,24 +170,6 @@ int main ()
     
     while (!glfwWindowShouldClose(window))
     {
-        t2 = std::chrono::steady_clock::now();
-        dt = t2 - t1;
-        
-        /*
-        float slp = 16666.6f - std::chrono::duration_cast<std::chrono::microseconds>(dt).count();
-        if (slp > 200.0f)
-        {
-            //cout << "Sleep: " << slp << endl;
-            //std::this_thread::sleep_for(std::chrono::microseconds((int)slp - 100));
-        }
-        */
-    
-        t2 = std::chrono::steady_clock::now();
-        dt = t2 - t1;
-        //std::cout << "dt: " << std::chrono::duration_cast<std::chrono::microseconds>(dt).count() << std::endl;
-        
-        t1 = t2;
-        
         glfwPollEvents();
         
         transform[0] =   scale/w1[3];
