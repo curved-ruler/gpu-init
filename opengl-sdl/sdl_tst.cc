@@ -1,8 +1,13 @@
 
+#include <chrono>
+#include <thread>
 #include <iostream>
 
 #include <glad/glad.h>
 #include <SDL2/SDL.h>
+
+//std::chrono::time_point<std::chrono::steady_clock> t1, t2;
+//std::chrono::duration<float> dt;
 
 SDL_Window*   window  = 0;
 SDL_Renderer* sdl_rrr = 0;
@@ -148,15 +153,35 @@ int main()
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, 0);
     
+    glViewport(0, 0, w1[2], w1[3]);
+    
+    // vsync or manual sleep didn't work in X11
+    //t1 = std::chrono::steady_clock::now();
     while (true)
     {
+        /*
+        t2 = std::chrono::steady_clock::now();
+        dt = t2 - t1;
+        
+        float slp = 16666.6f - std::chrono::duration_cast<std::chrono::microseconds>(dt).count();
+        if (slp > 200.0f)
+        {
+            std::this_thread::sleep_for(std::chrono::microseconds((int)slp - 1000));
+        }
+    
+        t2 = std::chrono::steady_clock::now();
+        dt = t2 - t1;
+        
+        t1 = t2;
+        */
+        
         SDL_Event event;
         if (SDL_PollEvent(&event))
         {
             if (event.type == SDL_QUIT)
                 break;
             
-            if (event.type == SDL_KEYDOWN)
+            else if (event.type == SDL_KEYDOWN)
             {
                 if (event.key.keysym.scancode == SDL_SCANCODE_ESCAPE)
                 {
@@ -165,6 +190,36 @@ int main()
                 else if (event.key.keysym.scancode == SDL_SCANCODE_Q)
                 {
                     param_freeze = !param_freeze;
+                }
+                else if (event.key.keysym.scancode == SDL_SCANCODE_F11)
+                {
+                    if (window_fullscreen)
+                    {
+                        w1[0] = w2[0];
+                        w1[1] = w2[1];
+                        w1[2] = w2[2];
+                        w1[3] = w2[3];
+                        SDL_SetWindowFullscreen(window, 0);
+                        glViewport(0, 0, w1[2], w1[3]);
+                        
+                        window_fullscreen = false;
+                    }
+                    else
+                    {
+                        w2[0] = w1[0];
+                        w2[1] = w1[1];
+                        w2[2] = w1[2];
+                        w2[3] = w1[3];
+                        SDL_DisplayMode mode;
+                        SDL_GetCurrentDisplayMode(SDL_GetWindowDisplayIndex(window), &mode);
+                        SDL_SetWindowDisplayMode(window, &mode);
+                        SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN);
+                        w1[2] = mode.w;
+                        w1[3] = mode.h;
+                        glViewport(0, 0, w1[2], w1[3]);
+                        
+                        window_fullscreen = true;
+                    }
                 }
                 else if (event.key.keysym.scancode == SDL_SCANCODE_C && ((SDL_GetModState() & KMOD_CTRL) != 0)) //Ctrl-C
                 {
@@ -180,23 +235,23 @@ int main()
                 }
             }
             
-            if (event.type == SDL_MOUSEWHEEL)
+            else if (event.type == SDL_MOUSEWHEEL)
             {
                 if (event.wheel.y > 0) { scale *= 0.8f;  }
                 else                   { scale *= 1.25f; }
             }
 
-            if (event.type == SDL_MOUSEBUTTONDOWN && event.button.button == SDL_BUTTON_LEFT)
+            else if (event.type == SDL_MOUSEBUTTONDOWN && event.button.button == SDL_BUTTON_LEFT)
             {
                 grabbed = true;
             }
 
-            if (event.type == SDL_MOUSEBUTTONUP && event.button.button == SDL_BUTTON_LEFT)
+            else if (event.type == SDL_MOUSEBUTTONUP && event.button.button == SDL_BUTTON_LEFT)
             {
                 grabbed = false;
             }
 
-            if (event.type == SDL_MOUSEMOTION)
+            else if (event.type == SDL_MOUSEMOTION)
             {
                 if (grabbed)
                 {
@@ -208,6 +263,21 @@ int main()
                 {
                     mouse[0] = transform[0] *        float(event.motion.x)  + transform[1];
                     mouse[1] = transform[2] * (w1[3]-float(event.motion.y)) + transform[3];
+                }
+            }
+            
+            else if (event.type == SDL_WINDOWEVENT)
+            {
+                if (event.window.event == SDL_WINDOWEVENT_MOVED)
+                {
+                    w1[0] = event.window.data1;
+                    w1[1] = event.window.data2;
+                }
+                else if (event.window.event == SDL_WINDOWEVENT_RESIZED || event.window.event == SDL_WINDOWEVENT_SIZE_CHANGED)
+                {
+                    w1[2] = event.window.data1;
+                    w1[3] = event.window.data2;
+                    glViewport(0, 0, w1[2], w1[3]);
                 }
             }
         }
