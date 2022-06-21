@@ -22,6 +22,7 @@ Mouse move  - set Julia parameter<br/>
 Mouse drag  - pan<br/>
 Mouse wheel - zoom<br/>
 Q key - freeze parameter<br/>
+Ctrl-C and Ctrl-V: copies and pastes the Julia parameter. (Copy doesn't work for web apps, instead they show the parameter at all times)
 
 ### Bugs/Todo
 
