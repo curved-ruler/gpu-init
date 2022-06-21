@@ -95,6 +95,13 @@ void main()
 
 
 
+inline bool numeric (char c)
+{
+    return ( (c>='0' && c<='9') || (c=='.') || (c=='-') );
+}
+
+
+
 int main()
 {
     int ret = SDL_Init(SDL_INIT_EVERYTHING);
@@ -223,14 +230,34 @@ int main()
                 }
                 else if (event.key.keysym.scancode == SDL_SCANCODE_C && ((SDL_GetModState() & KMOD_CTRL) != 0)) //Ctrl-C
                 {
-                    SDL_SetClipboardText("opengl-sdl");
-                    std::cout << "Clipboard: opengl-sdl" << std::endl;
+                    std::string params = "(" + std::to_string(mouse[0]) + ", " + std::to_string(mouse[1]) + ")";
+                    SDL_SetClipboardText(params.c_str());
+                    std::cout << "To clipboard: " << params << std::endl;
                 }
                 else if (event.key.keysym.scancode == SDL_SCANCODE_V && ((SDL_GetModState() & KMOD_CTRL) != 0)) //Ctrl-V
                 {
                     if (SDL_HasClipboardText() )
                     {
-                        std::cout << "Pasted: " << SDL_GetClipboardText() << std::endl;
+                        std::string params = SDL_GetClipboardText();
+                        size_t comma = params.find(',');
+                        if (comma != std::string::npos)
+                        {
+                            std::string m00 = params.substr(0,comma);
+                            std::string m11 = params.substr(comma+1);
+                            std::string m0, m1;
+                            for (size_t i=0 ; i<m00.size() ; ++i) { if (numeric(m00[i])) { m0 += m00[i]; } }
+                            for (size_t i=0 ; i<m11.size() ; ++i) { if (numeric(m11[i])) { m1 += m11[i]; } }
+                            
+                            mouse[0] = std::atof(m0.c_str());
+                            mouse[1] = std::atof(m1.c_str());
+                            param_freeze = true;
+                            
+                            std::cout << "Pasted: (" << mouse[0] << ", " << mouse[1] << ")" << std::endl;
+                        }
+                        else
+                        {
+                            std::cout << "Couldn't parse: " << params << std::endl;
+                        }
                     }
                 }
             }

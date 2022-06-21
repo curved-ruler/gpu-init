@@ -191,6 +191,10 @@ int main ()
 }
 
 
+inline bool numeric (char c)
+{
+    return ( (c>='0' && c<='9') || (c=='.') || (c=='-') );
+}
 
 void key_callback (GLFWwindow* /*wnd*/, int key, int /*scancode*/, int action, int mods)
 {
@@ -201,14 +205,34 @@ void key_callback (GLFWwindow* /*wnd*/, int key, int /*scancode*/, int action, i
     
     else if (key == (GLFW_KEY_C) && (mods & GLFW_MOD_CONTROL))
     {
-        glfwSetClipboardString(NULL, "clipboard test");
-        std::cout << "Clipboard updated" << std::endl;
+        std::string params = "(" + std::to_string(mouse[0]) + ", " + std::to_string(mouse[1]) + ")";
+        glfwSetClipboardString(NULL, params.c_str());
+        std::cout << "To clipboard: " << params << std::endl;
         return;
     }
     
     else if (key == (GLFW_KEY_V) && (mods & GLFW_MOD_CONTROL))
     {
-        std::cout << "Pasted: " << glfwGetClipboardString(NULL) << std::endl;
+        std::string params = glfwGetClipboardString(NULL);
+        size_t comma = params.find(',');
+        if (comma != std::string::npos)
+        {
+            std::string m00 = params.substr(0,comma);
+            std::string m11 = params.substr(comma+1);
+            std::string m0, m1;
+            for (size_t i=0 ; i<m00.size() ; ++i) { if (numeric(m00[i])) { m0 += m00[i]; } }
+            for (size_t i=0 ; i<m11.size() ; ++i) { if (numeric(m11[i])) { m1 += m11[i]; } }
+            
+            mouse[0] = std::atof(m0.c_str());
+            mouse[1] = std::atof(m1.c_str());
+            param_freeze = true;
+            
+            std::cout << "Pasted: (" << mouse[0] << ", " << mouse[1] << ")" << std::endl;
+        }
+        else
+        {
+            std::cout << "Couldn't parse: " << params << std::endl;
+        }
         return;
     }
     

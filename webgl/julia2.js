@@ -161,6 +161,7 @@ void main()
 let gl     = null;
 let shader = null;
 let canvas = null;
+let params = null;
 let cwidth, cheight;
 
 let pos       = { x:0.0,  y:0.0 };
@@ -243,6 +244,7 @@ let handle_mouse_move = function (event)
     {
         mouse_pos.x = tr[0] * event.clientX + tr[1];
         mouse_pos.y = tr[2] * (cheight-event.clientY) + tr[3];
+        params.textContent = "(" + mouse_pos.x + ", " + mouse_pos.y + ")";
         draw();
     }
 };
@@ -251,6 +253,16 @@ let handle_key_down = function (event)
     if (event.key === "q" || event.key === "Q"/* && event.ctrlKey */)
     {
         mouse_param = !mouse_param;
+    }
+    else if ((event.key === "c" || event.key === "C") && event.ctrlKey)
+    {
+        let p = "(" + mouse_pos.x + ", " + mouse_pos.y + ")";
+        navigator.clipboard.writeText(p);
+        console.log("P", p);
+    }
+    else if ((event.key === "v" || event.key === "V") && event.ctrlKey)
+    {
+        // Permissions API ...
     }
 };
 
@@ -280,6 +292,7 @@ let init = function ()
 {
     document.removeEventListener("DOMContentLoaded", init);
     
+    params = document.getElementById('params');
     canvas = document.getElementById('canvas');
     gl     = glprog.get_context_2('canvas');
     canvas.addEventListener("mousemove", handle_mouse_move);
