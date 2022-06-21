@@ -15,7 +15,7 @@ Desktop multiplatform windowing: [GLFW](https://www.glfw.org/) or [SDL2](https:/
 ### Controls
 
 The apps display the Mandelbrot and Julia sets.<br/>
-Except opencl: command line apps for device query and parallel vecadd<br/>
+OpenCL has two more small apps for command line device query and parallel vecadd<br/>
 <br/>
 Windows are resizable, and F11 - toggle fullscreen<br/>
 Mouse move  - set Julia parameter<br/>
@@ -28,7 +28,6 @@ Ctrl-C and Ctrl-V: copies and pastes the Julia parameter. (Paste doesn't work fo
 
 GLFW: multiple monitor support: https://github.com/glfw/glfw/issues/1699 <br/>
 SDL: app poses a full load on the CPU, vsync or manual sleep didn't work properly with X11<br/>
-WebGPU: currently only a triangle is shown, the Julia app does not work properly yet<br/>
-OpenCL: more apps are coming<br/>
+WebGPU: not working at all right now<br/>
 Vulkan: coming<br/>
 (no smartphone or controller support atm)
