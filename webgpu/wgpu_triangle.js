@@ -1,9 +1,5 @@
 
 let canvas   = null;
-let context  = null;
-let device   = null;
-let format   = null;
-let pipeline = null;
 
 //const pixr = window.devicePixelRatio || 1;
 
@@ -39,14 +35,23 @@ let init = async function ()
     if (!navigator.gpu) { alert('ERROR: WebGPU is not available'); return; }
 
     const adapter = await navigator.gpu.requestAdapter();
-    device        = await adapter.requestDevice();
+    const device  = await adapter.requestDevice();
 
     canvas  = document.getElementById('canvas');
-    context = canvas.getContext('webgpu');
+    const context = canvas.getContext('webgpu');
+    const format = context.getPreferredFormat(adapter);
+    
+    canvas.width  = window.innerWidth;
+    canvas.height = window.innerHeight;
+    csize = [ canvas.width, canvas.height ];
+    
+    context.configure({
+        device: device,
+        format: format,
+        size:   csize
+    });
 
-    format = context.getPreferredFormat(adapter);
-
-    pipeline = device.createRenderPipeline({
+    const pipeline = device.createRenderPipeline({
         vertex: {
             module: device.createShaderModule({
                 code: vertex_wgsl
@@ -66,14 +71,6 @@ let init = async function ()
             topology: 'triangle-list',
         }
     });
-    
-    resize();
-    draw();
-};
-
-let draw = function ()
-{
-    if (!context) return;
     
     const commandEncoder = device.createCommandEncoder();
     const textureView    = context.getCurrentTexture().createView();
@@ -97,22 +94,6 @@ let draw = function ()
     device.queue.submit([commandEncoder.finish()]);
 };
 
-let resize = function ()
-{
-    if (!context) return;
-    
-    canvas.width  = window.innerWidth;
-    canvas.height = window.innerHeight;
-    csize = [ canvas.width, canvas.height ];
-    
-    context.configure({
-        device: device,
-        format: format,
-        size:   csize
-    });
-};
-
-
 
 document.addEventListener("DOMContentLoaded", init);
-window.addEventListener("resize", function() { resize(); draw(); });
+//window.addEventListener("resize", function() { resize(); draw(); });
