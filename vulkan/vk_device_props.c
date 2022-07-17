@@ -1,6 +1,4 @@
 
-#define VK_USE_PLATFORM_MACOS_MVK
-
 #include <stdio.h>
 #include <vulkan/vulkan.h>
 
