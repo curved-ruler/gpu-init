@@ -39,7 +39,7 @@ let init = async function ()
 
     canvas  = document.getElementById('canvas');
     const context = canvas.getContext('webgpu');
-    const format = context.getPreferredFormat(adapter);
+    const format = navigator.gpu.getPreferredCanvasFormat(adapter);
     
     canvas.width  = window.innerWidth;
     canvas.height = window.innerHeight;
@@ -69,7 +69,8 @@ let init = async function ()
         },
         primitive: {
             topology: 'triangle-list',
-        }
+        },
+        layout: 'auto'
     });
     
     const commandEncoder = device.createCommandEncoder();
@@ -78,9 +79,9 @@ let init = async function ()
     const renderPassDescriptor = {
         colorAttachments: [{
             view: textureView,
-            //clearValue: { r: 0.2, g: 0.2, b: 0.2, a: 1.0 }, //Chromium
-            //loadOp: 'clear', //Chromium
-            loadValue: { r: 0.2, g: 0.2, b: 0.2, a: 1.0 }, //Firefox
+            clearValue: { r: 0.2, g: 0.2, b: 0.2, a: 1.0 },
+            loadOp: 'clear',
+            //loadValue: { r: 0.2, g: 0.2, b: 0.2, a: 1.0 }, //Firefox
             storeOp: 'store'
         }]
     };
@@ -88,8 +89,7 @@ let init = async function ()
     const passEncoder = commandEncoder.beginRenderPass(renderPassDescriptor);
     passEncoder.setPipeline(pipeline);
     passEncoder.draw(3, 1, 0, 0);
-    //passEncoder.end(); //Chromium
-    passEncoder.endPass(); //Firefox
+    passEncoder.end();
 
     device.queue.submit([commandEncoder.finish()]);
 };
