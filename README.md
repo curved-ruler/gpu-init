@@ -28,7 +28,7 @@ Ctrl-C and Ctrl-V: copies and pastes the Julia parameter. (Paste doesn't work fo
 
 GLFW: multiple monitor support: https://github.com/glfw/glfw/issues/1699 <br/>
 SDL: app poses a full load on the CPU, vsync or manual sleep didn't work properly with X11<br/>
-WebGPU: Working in Firefox Nightly, but without resizing<br/>
+WebGPU: Working both in Firefox (Nightly) and Chromium, but without resizing<br/>
 OpenCL: resizing can crash the app<br/>
 Vulkan: coming<br/>
 (no smartphone or controller support atm)

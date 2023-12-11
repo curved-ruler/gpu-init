@@ -86,10 +86,31 @@ fn julia (xy : vec2<f32>) -> f32
 
 @fragment //Firefox
 //@stage(fragment) //Chromium
-fn main (@builtin(position) fragcoord : vec4<f32>) -> @location(0) vec4<f32>
+fn main(@builtin(position) fragcoord : vec4<f32>) -> @location(0) vec4<f32>
 {
-    var m = mandel(fragcoord.xy);
-    var j = julia(fragcoord.xy);
+    // Mandel
+    var z = vec2<f32>(0.0);
+    var x = uni.tr1 * fragcoord.x + uni.tr2;
+    var y = uni.tr3 * fragcoord.y + uni.tr4;
+    var i = i32(0);
+    var n = i32(100);
+    for (i=0 ; i<n ; i=i+1)
+    {
+        z = vec2<f32>(z.x*z.x - z.y*z.y + x, 2.0*z.x*z.y + y);
+        if (length(z) > 2.0) { break; }
+    }
+    var m = f32(i)/f32(n);
+    
+    // Julia
+    var z2 = vec2<f32>(x,y);
+    var i2 = i32(0);
+    var n2 = i32(200);
+    for (i2=0 ; i2<n2 ; i2=i2+1)
+    {
+        z2 = vec2<f32>(z2.x*z2.x - z2.y*z2.y + uni.mx, 2.0*z2.x*z2.y + uni.my);
+        if (length(z2) > 2.0) { break; }
+    }
+    var j = fract(f32(i2) / f32(n2) * 2.0);
     
     // Colour
     var c   = vec3<f32>(0.1, 0.9, j);
