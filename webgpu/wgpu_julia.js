@@ -55,14 +55,12 @@ struct trUniforms
 };
 @binding(0) @group(0) var<uniform> uni : trUniforms;
 
-@fragment //Firefox
-//@stage(fragment) //Chromium
-fn main(@builtin(position) fragcoord : vec4<f32>) -> @location(0) vec4<f32>
+
+fn mandel (xy : vec2<f32>) -> f32
 {
-    // Mandel
     var z = vec2<f32>(0.0);
-    var x = uni.tr1 * fragcoord.x + uni.tr2;
-    var y = uni.tr3 * fragcoord.y + uni.tr4;
+    var x = uni.tr1 * xy.x + uni.tr2;
+    var y = uni.tr3 * xy.y + uni.tr4;
     var i = i32(0);
     var n = i32(100);
     for (i=0 ; i<n ; i=i+1)
@@ -70,10 +68,12 @@ fn main(@builtin(position) fragcoord : vec4<f32>) -> @location(0) vec4<f32>
         z = vec2<f32>(z.x*z.x - z.y*z.y + x, 2.0*z.x*z.y + y);
         if (length(z) > 2.0) { break; }
     }
-    var m = f32(i)/f32(n);
-    
-    // Julia
-    var z2 = vec2<f32>(x,y);
+    return f32(i)/f32(n);
+}
+
+fn julia (xy : vec2<f32>) -> f32
+{
+    var z2 = vec2<f32>(xy.x, xy.y);
     var i2 = i32(0);
     var n2 = i32(200);
     for (i2=0 ; i2<n2 ; i2=i2+1)
@@ -81,7 +81,15 @@ fn main(@builtin(position) fragcoord : vec4<f32>) -> @location(0) vec4<f32>
         z2 = vec2<f32>(z2.x*z2.x - z2.y*z2.y + uni.mx, 2.0*z2.x*z2.y + uni.my);
         if (length(z2) > 2.0) { break; }
     }
-    var j = fract(f32(i2) / f32(n2) * 2.0);
+    return fract((f32(i2) / f32(n2)) * 2.0);
+}
+
+@fragment //Firefox
+//@stage(fragment) //Chromium
+fn main (@builtin(position) fragcoord : vec4<f32>) -> @location(0) vec4<f32>
+{
+    var m = mandel(fragcoord.xy);
+    var j = julia(fragcoord.xy);
     
     // Colour
     var c   = vec3<f32>(0.1, 0.9, j);
@@ -114,8 +122,22 @@ let init = async function ()
 
     context = canvas.getContext('webgpu');
 
-    format = context.getPreferredFormat(adapter);
+    format = navigator.gpu.getPreferredCanvasFormat(adapter);
+    
+    const bindGroupLayout = device.createBindGroupLayout({
+        entries: [{
+            binding: 0,
+            visibility: GPUShaderStage.FRAGMENT,
+            buffer: {},
+        }]
+    });
 
+    const pipelineLayout = device.createPipelineLayout({
+        bindGroupLayouts: [
+            bindGroupLayout, // @group(0)
+        ]
+    });
+    
     pipeline = device.createRenderPipeline({
         vertex: {
             module: device.createShaderModule({
@@ -134,7 +156,8 @@ let init = async function ()
         },
         primitive: {
             topology: 'triangle-list',
-        }
+        },
+        layout: pipelineLayout
     });
     
     uniformBuffer = device.createBuffer({
@@ -156,9 +179,9 @@ let init = async function ()
     renderPassDescriptor = {
         colorAttachments: [{
             view: textureView,
-            //clearValue: { r: 0.2, g: 0.2, b: 0.2, a: 1.0 }, //Chromium
-            //loadOp: 'clear', //Chromium
-            loadValue: { r: 0.2, g: 0.2, b: 0.2, a: 1.0 }, //Firefox
+            clearValue: { r: 0.2, g: 0.2, b: 0.2, a: 1.0 },
+            loadOp: 'clear',
+            //loadValue: { r: 0.2, g: 0.2, b: 0.2, a: 1.0 }, //Firefox
             storeOp: 'store'
         }]
     };
@@ -182,13 +205,23 @@ let draw = function ()
         trbuf.byteLength
     );
     
+    const textureView = context.getCurrentTexture().createView();
+    renderPassDescriptor = {
+        colorAttachments: [{
+            view: textureView,
+            clearValue: { r: 0.2, g: 0.2, b: 0.2, a: 1.0 },
+            loadOp: 'clear',
+            //loadValue: { r: 0.2, g: 0.2, b: 0.2, a: 1.0 }, //Firefox
+            storeOp: 'store'
+        }]
+    };
+    
     const commandEncoder = device.createCommandEncoder();
     const passEncoder = commandEncoder.beginRenderPass(renderPassDescriptor);
     passEncoder.setPipeline(pipeline);
     passEncoder.setBindGroup(0, uniformBindGroup);
     passEncoder.draw(6, 1, 0, 0);
-    //passEncoder.end(); //Chromium
-    passEncoder.endPass(); //Firefox
+    passEncoder.end();
 
     device.queue.submit([commandEncoder.finish()]);
 };
